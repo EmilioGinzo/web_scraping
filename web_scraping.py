@@ -8,7 +8,7 @@ import pandas as pd
 def get_Top20_languages(browser):
     try:
         browser.get("https://www.tiobe.com/tiobe-index/")
-        tiobe_file = open('tiobe_top_20.txt', 'w', encoding = 'utf-8')
+        tiobe_file = open('Tiobe Top 20 lenguajes.txt', 'w', encoding = 'utf-8')
         table_top = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.ID, "top20"))
         )
@@ -39,7 +39,7 @@ def github_topics_top20(browser, topic):
             link = link_prefix + topic.lower()
 
         browser.get(link)
-        resultados = open('Resultados.txt', 'a', encoding = 'utf-8')
+        
         repositories_with_text = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/main/div[2]/div[2]/div/div[1]/h2"))
         )
@@ -49,12 +49,11 @@ def github_topics_top20(browser, topic):
                 repositories = s
                 break
 
-        resultados.write(topic + "\t" + repositories + '\n')
+
         return int(repositories.replace(",", ""))
     except:
         return NULL
-    finally:
-        resultados.close()
+
 
 def github_rating(list_top20_repositories):
     list_github_rating = []
@@ -69,17 +68,24 @@ def github_rating_dataframe(dictionary_top20_languages):
     df = pd.DataFrame.from_dict(dictionary_top20_languages)
     df = df.sort_values(by=['Rating'], ascending=False)
     print(df)
-    df.to_csv('Top 20 lenguajes.txt', sep='\t',mode='w',index=False)
+    df.to_csv('Top 20 lenguajes - Repositorios.txt', sep='\t',mode='w',index=False)
 
 def main(browser):
     dictionary_top20_languages = get_Top20_languages(browser)
     list_top20_repositories = []
+    file_top20_repositories = open('Resultados.txt', 'w', encoding = 'utf-8')
     for language in dictionary_top20_languages['Nombre']:
-        list_top20_repositories.append(github_topics_top20(browser, language))
+        repository = github_topics_top20(browser, language)
+        list_top20_repositories.append(repository)
+        file_top20_repositories.write(language + "\t" + str(repository) + '\n')
+    
+    file_top20_repositories.close()
     list_github_rating = github_rating(list_top20_repositories)
     dictionary_top20_languages['Rating'] = list_github_rating
     github_rating_dataframe(dictionary_top20_languages)
 
-browser = webdriver.Chrome("driver\\chromedriver.exe")
-main(browser)
-browser.quit()
+try:
+    browser = webdriver.Chrome("driver\\chromedriver.exe")
+    main(browser)
+finally:
+    browser.quit()
