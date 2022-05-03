@@ -3,8 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
 
-def getTop(browser):
+def get_Top20_languages(browser):
     try:
         browser.get("https://www.tiobe.com/tiobe-index/")
         tiobe_file = open('tiobe_top_20.txt', 'w', encoding = 'utf-8')
@@ -13,13 +14,14 @@ def getTop(browser):
         )
         
         languages = table_top.find_element(by=By.TAG_NAME, value="tbody").find_elements(by=By.TAG_NAME, value="tr")
-        list_top20_name_rating = [["Nombre", "Rating"]]
+        dict_top20_name_rating = {'Nombre':[], 'Rating': []}
 
         for language in languages:
             td = language.find_elements(by=By.TAG_NAME, value="td")
-            tiobe_file.write(td[4].text + "\t\t\t\t\t\t" + td[5].text + '\n')
-            list_top20_name_rating.append([td[4].text, td[5].text])
-        return list_top20_name_rating
+            tiobe_file.write(td[4].text + "\t" + td[5].text + '\n')
+            dict_top20_name_rating['Nombre'].append(td[4].text)
+            dict_top20_name_rating['Rating'].append(td[5].text)
+        return dict_top20_name_rating
     except:
         return NULL
     finally:
@@ -38,24 +40,45 @@ def github_topics_top20(browser, topic):
 
         browser.get(link)
         resultados = open('Resultados.txt', 'a', encoding = 'utf-8')
-        repositories = WebDriverWait(browser, 10).until(
+        repositories_with_text = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/main/div[2]/div[2]/div/div[1]/h2"))
         )
 
-        for s in repositories.text.split():
+        for s in repositories_with_text.text.split():
             if s[:1].isdigit():
-                repositories_str = s
-        
-        resultados.write(topic + "\t" + repositories_str + '\n')
-        
+                repositories = s
+                break
 
+        resultados.write(topic + "\t" + repositories + '\n')
+        return int(repositories.replace(",", ""))
+    except:
+        return NULL
     finally:
         resultados.close()
 
+def github_rating(list_top20_repositories):
+    list_github_rating = []
+    max_repositories = max(list_top20_repositories)
+    min_repositories = min(list_top20_repositories)
+    difference_max_min = max_repositories - min_repositories
+    for repository in list_top20_repositories:
+        list_github_rating.append(((repository - min_repositories)/difference_max_min)*100)
+    return list_github_rating
+
+def github_rating_dataframe(dictionary_top20_languages):
+    df = pd.DataFrame.from_dict(dictionary_top20_languages)
+    df = df.sort_values(by=['Rating'], ascending=False)
+    print(df)
+    df.to_csv('Top 20 lenguajes.txt', sep='\t',mode='w',index=False)
+
 def main(browser):
-    top = getTop(browser)
-    for lenguaje in top[1:]:
-        github_topics_top20(browser, lenguaje[0])
+    dictionary_top20_languages = get_Top20_languages(browser)
+    list_top20_repositories = []
+    for language in dictionary_top20_languages['Nombre']:
+        list_top20_repositories.append(github_topics_top20(browser, language))
+    list_github_rating = github_rating(list_top20_repositories)
+    dictionary_top20_languages['Rating'] = list_github_rating
+    github_rating_dataframe(dictionary_top20_languages)
 
 browser = webdriver.Chrome("driver\\chromedriver.exe")
 main(browser)
