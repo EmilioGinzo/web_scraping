@@ -73,8 +73,6 @@ def github_rating_dataframe(dictionary_top20_languages):
     bar_graphic(df)
 
 def bar_graphic(df):
-    plt.bar(df['Nombre'], df['Github Rating'])
-    df = pd.DataFrame.from_dict(df)
     df = df.sort_values(by = ['Github Rating'], ascending = False)
     fig, ax = plt.subplots(figsize =(16, 8))
     ax.bar(df['Nombre'], df['Github Rating'])
