@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def get_Top20_languages(browser):
     try:
@@ -14,13 +15,13 @@ def get_Top20_languages(browser):
         )
         
         languages = table_top.find_element(by=By.TAG_NAME, value="tbody").find_elements(by=By.TAG_NAME, value="tr")
-        dict_top20_name_rating = {'Nombre':[], 'Rating': []}
+        dict_top20_name_rating = {'Nombre':[], 'Tiobe Rating': []}
 
         for language in languages:
             td = language.find_elements(by=By.TAG_NAME, value="td")
             tiobe_file.write(td[4].text + "\t" + td[5].text + '\n')
             dict_top20_name_rating['Nombre'].append(td[4].text)
-            dict_top20_name_rating['Rating'].append(td[5].text)
+            dict_top20_name_rating['Tiobe Rating'].append(td[5].text)
         return dict_top20_name_rating
     except:
         return NULL
@@ -31,7 +32,7 @@ def github_topics_top20(browser, topic):
     try:
         link_prefix = "https://github.com/topics/"
         list_of_wrong_names = ['C#','C++','Delphi/Object Pascal','Classic Visual Basic','Visual Basic']
-        list_of_right_names = ['c-sharp','cpp','pascal','visual basic','vbnet']
+        list_of_right_names = ['csharp','cpp','pascal','visual basic','vbnet']
         
         if topic in list_of_wrong_names:
             link = link_prefix + list_of_right_names[list_of_wrong_names.index(topic)]
@@ -66,10 +67,32 @@ def github_rating(list_top20_repositories):
 
 def github_rating_dataframe(dictionary_top20_languages):
     df = pd.DataFrame.from_dict(dictionary_top20_languages)
-    df = df.sort_values(by=['Rating'], ascending=False)
+    df = df.sort_values(by=['Github Rating'], ascending=False)
     print(df)
     df.to_csv('Top 20 lenguajes - Repositorios.txt', sep='\t',mode='w',index=False)
+    bar_graphic(df)
 
+def bar_graphic(df):
+    plt.bar(df['Nombre'], df['Github Rating'])
+    df = pd.DataFrame.from_dict(df)
+    df = df.sort_values(by = ['Github Rating'], ascending = False)
+    fig, ax = plt.subplots(figsize =(16, 8))
+    ax.bar(df['Nombre'], df['Github Rating'])
+    plt.xlabel('Github Rating')
+    plt.ylabel('Nombre')
+    plt.title('Grafico de Github Rating del Top 20 Lenguajes', loc ='left')
+    for s in ['top', 'bottom', 'left', 'right']:
+        ax.spines[s].set_visible(False)
+    ax.xaxis.set_ticks_position('none')
+    ax.yaxis.set_ticks_position('none')
+    plt.xticks(rotation=90)
+    ax.grid(b = True, color ='grey',
+        linestyle ='solid', linewidth = 0.5,
+        alpha = 0.2)
+    plt.subplots_adjust(bottom=0.23, right=0.95, top=0.94, left=0.05)
+    plt.show()
+
+# dictionary_top20_languages = {'Nombre': [], 'Tiobe Rating': [], 'Github Rating': []}
 def main(browser):
     dictionary_top20_languages = get_Top20_languages(browser)
     list_top20_repositories = []
@@ -81,8 +104,8 @@ def main(browser):
     
     file_top20_repositories.close()
     list_github_rating = github_rating(list_top20_repositories)
-    dictionary_top20_languages['Rating'] = list_github_rating
-    github_rating_dataframe(dictionary_top20_languages)
+    dictionary_top20_languages['Github Rating'] = list_github_rating
+    github_rating_dataframe(dictionary_top20_languages) #bar_graphic is called inside this function
 
 try:
     browser = webdriver.Chrome("driver\\chromedriver.exe")
