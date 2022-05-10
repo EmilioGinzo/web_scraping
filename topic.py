@@ -1,40 +1,38 @@
-from asyncio.windows_events import NULL
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import StaleElementReferenceException
+
 import pandas as pd
-import time
+
 
 def get_associated_topics(browser, topic):
     link_prefix = "https://github.com/topics/"
-    
-    link = link_prefix + topic.lower() + '?o=desc&s=updated'
-    browser.get(link)
+    link = link_prefix + topic.lower() + '?o=desc&s=updated&page=' 
     wait = WebDriverWait(browser, 10)
+    dict_of_related_topics = {'Topic': 0}
     
-    for i in range(0,2):
-        wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/main/div[2]/div[2]/div/div[1]/form")))
-        load_more_button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/main/div[2]/div[2]/div/div[1]/form/button")))
-        load_more_button.click()
-        print(i)
-    
-    div_articles = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/main/div[2]/div[2]/div/div[1]")))
-    list_articles = div_articles.find_elements(by=By.TAG_NAME, value="article")
-
-    list_repository_topics = []
-    for article in list_articles:
-        list_repository_topics.append(article.find_elements(by=By.CLASS_NAME, value="topic-tag"))
-    
-    for list_topics in list_repository_topics:
-        for topic in list_topics:
-            print(topic.text)
+    # every article has many repositories topics
+    for i in range(1,2):
+        browser.get(link + str(i))
+        list_articles = WebDriverWait(browser, 10).until(EC.presence_of_all_elements_located((By.TAG_NAME, "article")))
+        for article in list_articles:
+            list_of_related_topics_of_the_article = article.find_elements(by=By.CLASS_NAME, value="topic-tag")
+            for topic in list_of_related_topics_of_the_article:
+                if topic.text in dict_of_related_topics.keys():
+                    dict_of_related_topics[topic.text] += 1
+                else:
+                    dict_of_related_topics[topic.text] = 1
     print("FUNCIONA")
+    dict_sorted = sorted(dict_of_related_topics.items(), key=lambda kv: kv[1], reverse= True)
+    for key, val in  dict_sorted:
+        print(key + ' : ' + str(val))
+
 
 
 def main(browser):
-    get_associated_topics(browser, "python")
+    get_associated_topics(browser, "bot")
 
 
 browser = webdriver.Chrome("driver\\chromedriver.exe")
