@@ -1,1 +1,1 @@
-# web_scraping
+# python web scraper
