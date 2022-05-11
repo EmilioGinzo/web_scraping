@@ -48,7 +48,7 @@ def get_related_topics(browser: webdriver, topic: str):
     dict_of_related_topics = dict()
 
     # every article has many repositories topics
-    for page_nr in range(1,2):
+    for page_nr in range(1,11):
         browser.get(link + str(page_nr))
         list_articles = WebDriverWait(browser, 10).until(EC.presence_of_all_elements_located((By.TAG_NAME, 'article')))
         for article in list_articles:
