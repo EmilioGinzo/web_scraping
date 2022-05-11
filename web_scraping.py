@@ -70,9 +70,9 @@ def github_rating_dataframe(dictionary_top20_languages):
     df = df.sort_values(by=['Github Rating'], ascending=False)
     print(df)
     df.to_csv('Top 20 lenguajes - Repositorios.txt', sep='\t',mode='w',index=False)
-    bar_graphic(df)
+    bar_chart(df)
 
-def bar_graphic(df):
+def bar_chart(df):
     df = df.sort_values(by = ['Github Rating'], ascending = False)
     fig, ax = plt.subplots(figsize =(16, 8))
     ax.bar(df['Nombre'], df['Github Rating'])
@@ -103,10 +103,11 @@ def main(browser):
     file_top20_repositories.close()
     list_github_rating = github_rating(list_top20_repositories)
     dictionary_top20_languages['Github Rating'] = list_github_rating
-    github_rating_dataframe(dictionary_top20_languages) #bar_graphic is called inside this function
+    github_rating_dataframe(dictionary_top20_languages) #bar_chart is called inside this function
 
-try:
-    browser = webdriver.Chrome("driver\\chromedriver.exe")
-    main(browser)
-finally:
-    browser.quit()
+if __name__ == "__main__":
+    try:
+        browser = webdriver.Chrome("driver\\chromedriver.exe")
+        main(browser)
+    finally:
+        browser.quit()
