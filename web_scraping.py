@@ -19,7 +19,8 @@ def get_Top20_languages(browser):
 
         for language in languages:
             td = language.find_elements(by=By.TAG_NAME, value="td")
-            tiobe_file.write(td[4].text + "\t" + td[5].text + '\n')
+            text_format = '{:25} {}\n'.format(td[4].text, td[5].text)
+            tiobe_file.write(text_format)
             dict_top20_name_rating['Nombre'].append(td[4].text)
             dict_top20_name_rating['Tiobe Rating'].append(td[5].text)
         return dict_top20_name_rating
@@ -69,7 +70,7 @@ def github_rating_dataframe(dictionary_top20_languages):
     df = pd.DataFrame.from_dict(dictionary_top20_languages)
     df = df.sort_values(by=['Github Rating'], ascending=False)
     print(df)
-    df.to_csv('Top 20 lenguajes - Repositorios.txt', sep='\t',mode='w',index=False)
+
     bar_chart(df)
 
 def bar_chart(df):
@@ -84,7 +85,7 @@ def bar_chart(df):
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
     plt.xticks(rotation=90)
-    ax.grid(b = True, color ='grey',
+    ax.grid(visible = True, color ='grey',
         linestyle ='solid', linewidth = 0.5,
         alpha = 0.2)
     plt.subplots_adjust(bottom=0.23, right=0.95, top=0.94, left=0.05)
@@ -98,7 +99,8 @@ def main(browser):
     for language in dictionary_top20_languages['Nombre']:
         repository = github_topics_top20(browser, language)
         list_top20_repositories.append(repository)
-        file_top20_repositories.write(language + "\t" + str(repository) + '\n')
+        text_format = '{:25} {}\n'.format(language, str(repository))
+        file_top20_repositories.write(text_format)
     
     file_top20_repositories.close()
     list_github_rating = github_rating(list_top20_repositories)
