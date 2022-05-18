@@ -58,7 +58,7 @@ def get_related_topics(browser: webdriver, topic: str):
     """
     link = 'https://github.com/topics/' + topic.lower() + '?o=desc&s=updated&page=' 
     dict_of_related_topics = dict()
-    max_date = date.today() + timedelta(days=30)
+    max_date = date.today() - timedelta(days=30)
 
     # every article has many repositories topics
     # if the article has relative time, we compare it wit the maximum datetime, if it is greater thanthe maximum datetime, we return the dictionary
@@ -72,15 +72,11 @@ def get_related_topics(browser: webdriver, topic: str):
                 # example: date_created_str[:10] => 2022-05-17
                 date_created = date.fromisoformat(date_created_str[:10])
                 if date_created > max_date:
-                    return dict_of_related_topics
-                else:
-                    print('OK')
-            
-            for related_topic in list_of_related_topics_of_the_article:
-                if related_topic.text in dict_of_related_topics.keys():
-                    dict_of_related_topics[related_topic.text] += 1
-                else:
-                    dict_of_related_topics[related_topic.text] = 1
+                    for related_topic in list_of_related_topics_of_the_article:
+                        if related_topic.text in dict_of_related_topics.keys():
+                            dict_of_related_topics[related_topic.text] += 1
+                        else:
+                            dict_of_related_topics[related_topic.text] = 1
 
     return dict_of_related_topics
 

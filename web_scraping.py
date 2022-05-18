@@ -32,8 +32,8 @@ def get_Top20_languages(browser):
 def github_topics_top20(browser, topic):
     try:
         link_prefix = "https://github.com/topics/"
-        list_of_wrong_names = ['C#','C++','Delphi/Object Pascal','Classic Visual Basic','Visual Basic']
-        list_of_right_names = ['csharp','cpp','pascal','visual basic','vbnet']
+        list_of_wrong_names = ['C#','C++','Delphi/Object Pascal','Classic Visual Basic','Visual Basic', 'Assembly language', 'GO']
+        list_of_right_names = ['csharp','cpp','pascal','visual-basic','vbnet', 'assembly-language', 'golang']
         
         if topic in list_of_wrong_names:
             link = link_prefix + list_of_right_names[list_of_wrong_names.index(topic)]
@@ -74,7 +74,6 @@ def github_rating_dataframe(dictionary_top20_languages):
     bar_chart(df)
 
 def bar_chart(df):
-    df = df.sort_values(by = ['Github Rating'], ascending = False)
     fig, ax = plt.subplots(figsize =(16, 8))
     ax.bar(df['Nombre'], df['Github Rating'])
     plt.xlabel('Github Rating')
@@ -91,7 +90,7 @@ def bar_chart(df):
     plt.subplots_adjust(bottom=0.23, right=0.95, top=0.94, left=0.05)
     plt.show()
 
-# dictionary_top20_languages = {'Nombre': [], 'Tiobe Rating': [], 'Github Rating': []}
+# dictionary_top20_languages = {'Nombre': [], 'Tiobe Rating': [], 'Github Rating': [], 'Repositories': []}
 def main(browser):
     dictionary_top20_languages = get_Top20_languages(browser)
     list_top20_repositories = []
@@ -105,6 +104,7 @@ def main(browser):
     file_top20_repositories.close()
     list_github_rating = github_rating(list_top20_repositories)
     dictionary_top20_languages['Github Rating'] = list_github_rating
+    dictionary_top20_languages['Repositories'] = list_top20_repositories
     github_rating_dataframe(dictionary_top20_languages) #bar_chart is called inside this function
 
 if __name__ == "__main__":
